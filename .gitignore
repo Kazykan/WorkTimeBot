@@ -1,0 +1,46 @@
+# 🐍 Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+*.pyc
+
+# 📦 Virtual environments
+.venv/
+venv/
+.env
+.env.*
+
+# 🧪 Test artifacts
+*.pytest_cache/
+.cache/
+.coverage
+htmlcov/
+
+# 🗃️ База данных
+*.db
+*.sqlite3
+
+# 📄 Логи и временные файлы
+*.log
+*.tmp
+*.swp
+
+# 📁 IDE/Editor-specific
+.vscode/
+.idea/
+*.sublime-project
+*.sublime-workspace
+
+# 📦 Packaging
+*.egg-info/
+dist/
+build/
+
+# 🚫 Секреты и конфигурации
+.env
+env.example  # можно оставить, если он шаблон, но лучше явно указать
+
+# 📄 OS-specific
+.DS_Store
+Thumbs.db
