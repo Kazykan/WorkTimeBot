@@ -55,27 +55,31 @@ async def report_last_month_callback(callback: types.CallbackQuery, state: FSMCo
     await state.clear()
     
     start_date, end_date = ReportingService.get_last_month_period()
-    await generate_period_report(callback.message, callback.from_user.id, start_date, end_date)
-    await callback.answer()
+    if isinstance(callback.message, types.Message):
+        await generate_period_report(callback.message, callback.from_user.id, start_date, end_date)
+        await callback.answer()
 
 
 @router.callback_query(lambda c: c.data == "report_custom")
 async def report_custom_callback(callback: types.CallbackQuery, state: FSMContext):
     """Handle custom period report callback"""
     await state.set_state(ReportStates.waiting_for_start_date)
-    
-    await callback.message.edit_text(
-        "📅 <b>Отчёт за произвольный период</b>\n\n"
-        "Введите начальную дату (формат ДД.ММ.ГГ):",
-        reply_markup=get_cancel_keyboard(),
-        parse_mode="HTML"
-    )
-    await callback.answer()
+    if isinstance(callback.message, types.Message):
+        await callback.message.edit_text(
+            "📅 <b>Отчёт за произвольный период</b>\n\n"
+            "Введите начальную дату (формат ДД.ММ.ГГ):",
+            reply_markup=get_cancel_keyboard(),
+            parse_mode="HTML"
+        )
+        await callback.answer()
 
 
 @router.message(StateFilter(ReportStates.waiting_for_start_date))
 async def process_start_date(message: types.Message, state: FSMContext):
     """Process start date input"""
+    if isinstance(message, types.Message):
+        await message.answer("❌ Ошибка: сообщение не от пользователя.")
+        return
     start_date = parse_russian_date(message.text)
     if not start_date:
         await message.answer(
@@ -97,6 +101,9 @@ async def process_start_date(message: types.Message, state: FSMContext):
 @router.message(StateFilter(ReportStates.waiting_for_end_date))
 async def process_end_date(message: types.Message, state: FSMContext):
     """Process end date input and generate report"""
+    if isinstance(message, types.Message) or not message.from_user:
+        await message.answer("❌ Ошибка: сообщение не от пользователя.")
+        return
     data = await state.get_data()
     start_date = data["start_date"]
     
@@ -181,5 +188,9 @@ async def generate_period_report(message: types.Message, user_id: int, start_dat
 async def cancel_report(callback: types.CallbackQuery, state: FSMContext):
     """Cancel report generation"""
     await state.clear()
-    await callback.message.edit_text("❌ Генерация отчёта отменена.")
-    await callback.answer()
+    if isinstance(callback.message, types.Message):
+        await callback.message.edit_text("❌ Генерация отчёта отменена.")
+        await callback.answer()
+    else:
+        await callback.answer()
+
