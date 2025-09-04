@@ -134,6 +134,8 @@ async def generate_period_report(message: types.Message, user_id: int, start_dat
             await message.answer("❌ Пользователь не найден. Используйте /start для регистрации.")
             return
         
+        print(f'{user.id}, {user.telegram_id}, {user.first_name}')
+        
         # Get all objects for user
         objects = await object_repo.get_all_for_user(user.id, include_completed=True)
         
@@ -141,13 +143,26 @@ async def generate_period_report(message: types.Message, user_id: int, start_dat
         all_time_entries = []
         all_payments = []
         
+
+
         for obj in objects:
             entries = await time_repo.get_entries_in_period(obj.id, start_date, end_date)
             payments = await payment_repo.get_payments_in_period(obj.id, start_date, end_date)
-            
+
+            print(f"\n🔍 Объект: {obj.name} (ID: {obj.id})")
+
+            for entry in entries:
+                print(f"⏱️ TimeEntry: {entry.id}, date: {entry.date}, duration: {entry.end_time} - {entry.start_time}")
+
+            for payment in payments:
+                print(f"💰 Payment: {payment.id}, date: {payment.date}, amount: {payment.amount}")
+
             all_time_entries.extend(entries)
             all_payments.extend(payments)
         
+        print(f"Объекты: {[obj.name for obj in objects]}")
+        print(f"Записей времени: {len(all_time_entries)}")
+        print(f"Платежей: {len(all_payments)}")
         # Generate report
         report = ReportingService.generate_period_report(
             objects, all_time_entries, all_payments, start_date, end_date

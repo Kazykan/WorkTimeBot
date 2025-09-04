@@ -5,6 +5,7 @@ from typing import List
 from aiogram.types import InlineKeyboardButton, InlineKeyboardMarkup
 from aiogram.utils.keyboard import InlineKeyboardBuilder
 
+from app.fsm.callback_data import ObjectCallback
 from app.models.work_object import ObjectStatus, WorkObject
 from app.utils.formatting import format_currency, format_hours
 
@@ -12,30 +13,30 @@ from app.utils.formatting import format_currency, format_hours
 def get_objects_list_keyboard(objects: List[WorkObject], include_completed: bool = True) -> InlineKeyboardMarkup:
     """Keyboard for listing work objects"""
     builder = InlineKeyboardBuilder()
-    
+
     for obj in objects:
-        # Skip completed objects if not included
         if not include_completed and obj.status == ObjectStatus.COMPLETED:
             continue
             
         status_emoji = "🔵" if obj.status == ObjectStatus.ACTIVE else "🟢"
         button_text = f"{status_emoji} {obj.name}"
-        callback_data = f"object_{obj.id}"
+        # ✅ Изменение 1: Заменяем строковый колбэк на экземпляр CallbackData
+        callback_data = ObjectCallback(action="select", object_id=obj.id)
         
-        builder.add(InlineKeyboardButton(text=button_text, callback_data=callback_data))
+        builder.add(InlineKeyboardButton(text=button_text, callback_data=callback_data.pack()))
     
-    # Add filter toggle
+    # ✅ Изменение 2: Заменяем строковые колбэки на экземпляры CallbackData для кнопок фильтра
     if include_completed:
-        builder.add(InlineKeyboardButton(text="🔵 Только активные", callback_data="objects_active_only"))
+        builder.add(InlineKeyboardButton(text="🔵 Только активные", callback_data=ObjectCallback(action="active_only").pack()))
     else:
-        builder.add(InlineKeyboardButton(text="🔵🟢 Все объекты", callback_data="objects_all"))
+        builder.add(InlineKeyboardButton(text="🔵🟢 Все объекты", callback_data=ObjectCallback(action="all").pack()))
     
-    builder.add(InlineKeyboardButton(text="➕ Добавить объект", callback_data="add_object"))
-    builder.add(InlineKeyboardButton(text="⬅️ Назад", callback_data="back"))
+    # ✅ Изменение 3: Заменяем строковые колбэки на экземпляры CallbackData для остальных кнопок
+    builder.add(InlineKeyboardButton(text="➕ Добавить объект", callback_data=ObjectCallback(action="add").pack()))
+    builder.add(InlineKeyboardButton(text="⬅️ Назад", callback_data=ObjectCallback(action="back").pack()))
     
-    builder.adjust(1)  # One button per row
+    builder.adjust(1)
     return builder.as_markup()
-
 
 def get_object_actions_keyboard(
     work_object: WorkObject,

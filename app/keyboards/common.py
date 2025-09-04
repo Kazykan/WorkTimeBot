@@ -1,10 +1,13 @@
 from __future__ import annotations
+from typing import List
 
 from aiogram.types import InlineKeyboardButton, InlineKeyboardMarkup, KeyboardButton, ReplyKeyboardMarkup
 from aiogram.utils.keyboard import InlineKeyboardBuilder, ReplyKeyboardBuilder
 from aiogram.filters.callback_data import CallbackData
 
-class ObjectSelectCallback(CallbackData, prefix="object"):
+from app.models.work_object import WorkObject
+
+class ObjectSelectCallback(CallbackData, prefix="add_time_object"):
     action: str  # "select" или "manual"
     object_id: int | None = None
 
@@ -120,7 +123,7 @@ def get_date_selection_keyboard() -> InlineKeyboardMarkup:
     return builder.as_markup()
 
 
-def get_object_selection_keyboard(objects: list) -> InlineKeyboardMarkup:
+def get_object_selection_keyboard(objects: List[WorkObject]) -> InlineKeyboardMarkup:
     """Генерация клавиатуры выбора объекта с кнопками для каждого объекта и опцией ручного ввода"""
     builder = InlineKeyboardBuilder()
 

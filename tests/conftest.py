@@ -1,5 +1,8 @@
 import pytest_asyncio
 from sqlalchemy.ext.asyncio import create_async_engine, async_sessionmaker, AsyncSession
+import pytest
+
+pytest_plugins = 'pytest_asyncio'
 
 import sys
 import os

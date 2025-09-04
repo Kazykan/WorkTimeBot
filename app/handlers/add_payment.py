@@ -45,6 +45,7 @@ async def add_payment_button(message: types.Message, state: FSMContext):
 @router.callback_query(lambda c: c.data.startswith("add_payment_"))
 async def add_payment_from_object(callback: types.CallbackQuery, state: FSMContext):
     """Handle inline button from object details to add payment for specific object"""
+    print('add_payment_from_object')
     await state.clear()
     try:
         object_id = int(callback.data.split("_")[2])
