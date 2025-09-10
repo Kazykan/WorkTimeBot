@@ -3,13 +3,11 @@ from typing import List
 
 from aiogram.types import InlineKeyboardButton, InlineKeyboardMarkup, KeyboardButton, ReplyKeyboardMarkup
 from aiogram.utils.keyboard import InlineKeyboardBuilder, ReplyKeyboardBuilder
-from aiogram.filters.callback_data import CallbackData
 
+from app.fsm.callback_data import ObjectCallback
 from app.models.work_object import WorkObject
 
-class ObjectSelectCallback(CallbackData, prefix="add_time_object"):
-    action: str  # "select" или "manual"
-    object_id: int | None = None
+
 
 # Common text constants
 class Texts:
@@ -131,14 +129,14 @@ def get_object_selection_keyboard(objects: List[WorkObject]) -> InlineKeyboardMa
         builder.add(
             InlineKeyboardButton(
                 text=f"🔵 {obj.name}",
-                callback_data=ObjectSelectCallback(action="select", object_id=obj.id).pack()
+                callback_data=ObjectCallback(action="select", object_id=obj.id).pack()
             )
         )
 
     builder.add(
         InlineKeyboardButton(
             text=Texts.MANUAL_OBJECT,
-            callback_data=ObjectSelectCallback(action="manual").pack()
+            callback_data=ObjectCallback(action="manual").pack()
         )
     )
     builder.add(

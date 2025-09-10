@@ -3,8 +3,9 @@ from operator import call
 
 from aiogram import Router, types, F
 from aiogram.types import Message
-from aiogram.filters import Command
+from aiogram.filters import Command, StateFilter
 from aiogram.fsm.context import FSMContext
+from aiogram.fsm.state import State, StatesGroup
 
 
 from app.db.session import db_session
@@ -24,14 +25,22 @@ from app.utils.formatting import format_currency, format_hours
 
 router = Router()
 
-@router.callback_query(ObjectCallback.filter(F.action == "select"))
+
+class ObjectStates(StatesGroup):
+    waiting_for_object = State()
+
+
+@router.callback_query(
+    StateFilter(ObjectStates.waiting_for_object),
+    ObjectCallback.filter(F.action == "select"),
+)
 async def cmd_select_object(
     query: types.CallbackQuery, callback_data: ObjectCallback, state: FSMContext
 ):
     """Handle object selection"""
-    print('cmd_select_object')
+    print("cmd_select_object")
     await state.clear()
-    print(f'cmd_select_object {callback_data.object_id}')
+    print(f"cmd_select_object {callback_data.object_id}")
     object_id = callback_data.object_id  # теперь берём ID из callback_data
     if not object_id:
         await query.answer("❌ Некорректный идентификатор объекта")
@@ -64,7 +73,9 @@ async def cmd_select_object(
 
         # Формируем текст
         status_emoji = "🔵" if work_object.status == ObjectStatus.ACTIVE else "🟢"
-        status_text = "Активен" if work_object.status == ObjectStatus.ACTIVE else "Завершён"
+        status_text = (
+            "Активен" if work_object.status == ObjectStatus.ACTIVE else "Завершён"
+        )
 
         info_text = (
             f"🏗️ <b>{work_object.name}</b>\n"

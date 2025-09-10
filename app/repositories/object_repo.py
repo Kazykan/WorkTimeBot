@@ -80,3 +80,12 @@ class WorkObjectRepository:
             )
         )
         return result.scalar_one_or_none()
+
+async def get_active_objects_for_user(user_id: int) -> list[WorkObject]:
+    """Get active (not completed) objects for user"""
+    async with db_session() as session:
+        object_repo = WorkObjectRepository(session)
+        return await object_repo.get_all_for_user(user_id, include_completed=False)
+    
+
+    

@@ -4,7 +4,7 @@ from datetime import datetime, timezone
 import re
 from typing import Optional
 
-import pytz
+import pytz # type: ignore
 
 
 def parse_russian_date(
@@ -58,22 +58,32 @@ def parse_time(
     time_str: str, date: datetime, timezone_name: str = "Europe/Moscow"
 ) -> Optional[datetime]:
     """
-    Parse time string in format HH:MM or HH.MM
+    Parse time string in formats:
+    HH:MM, HH.MM, HH MM, HHMM, H, HH, H M, HH M, etc.
     Returns datetime with specified date and time
     """
     try:
-        # Handle different time formats
-        if ":" in time_str:
-            hour, minute = map(int, time_str.split(":"))
-        elif "." in time_str:
-            hour, minute = map(int, time_str.split("."))
-        else:
-            # Assume HHMM format
-            if len(time_str) == 4:
-                hour, minute = int(time_str[:2]), int(time_str[2:])
+        time_str = time_str.strip()
+        # Заменяем все разделители на пробел
+        for sep in [":", ".", "-"]:
+            time_str = time_str.replace(sep, " ")
+
+        parts = time_str.split()
+
+        if len(parts) == 2:
+            hour, minute = map(int, parts)
+        elif len(parts) == 1:
+            val = parts[0]
+            if len(val) == 4 and val.isdigit():
+                hour, minute = int(val[:2]), int(val[2:])
+            elif len(val) <= 2 and val.isdigit():
+                hour, minute = int(val), 0
             else:
                 return None
+        else:
+            return None
 
+        # Проверка диапазонов
         if not (0 <= hour <= 23 and 0 <= minute <= 59):
             return None
 
@@ -117,3 +127,16 @@ def calculate_hours(start_time: datetime, end_time: datetime) -> float:
 
     delta = end_time - start_time
     return round(delta.total_seconds() / 3600, 2)  # Round to 2 decimal places
+
+
+def hours_to_str(hours: float) -> str:
+    """
+    Преобразует часы в формате float (например, 7.75)
+    в строку формата HH:MM (например, '7:45')
+    """
+    h = int(hours)
+    m = int(round((hours - h) * 60))
+    if m == 60:  # защита от округления 59.999 → 60
+        h += 1
+        m = 0
+    return f"{h}:{m:02d}"
